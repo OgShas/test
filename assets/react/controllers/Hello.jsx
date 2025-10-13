@@ -1,6 +1,8 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
+import Header from '../components/Header';
 
-export default function Hello(props) {
-    console.log('Hello component mounted!', props);
-    return <div style={{ border: '2px solid red' }}>Hello {props.fullName}</div>;
+const root = document.getElementById('header-react');
+if (root) {
+    ReactDOM.render(<Header />, root);
 }
