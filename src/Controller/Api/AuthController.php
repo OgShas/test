@@ -1,5 +1,5 @@
 <?php
-namespace App\Controller;
+namespace App\Controller\Api;
 
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
@@ -23,9 +23,9 @@ class AuthController extends AbstractController
         $this->jwtManager = $jwtManager;
     }
 
-    /**
-     * @Route("/api/register", name="api_register", methods={"POST"})
-     */
+    // src/Controller/Api/AuthController.php
+
+    #[Route('/api/register', name: 'api_register', methods: ['POST'])]
     public function register(Request $request)
     {
         $data = json_decode($request->getContent(), true);
@@ -51,15 +51,18 @@ class AuthController extends AbstractController
         $this->em->persist($user);
         $this->em->flush();
 
-        // optionally auto-login: create JWT
+        // ✅ Generate JWT token after registration
         $token = $this->jwtManager->create($user);
 
-        return new JsonResponse(['token' => $token, 'is_admin' => $user->getIsAdmin()], 201);
+        return new JsonResponse([
+            'token' => $token,        // send token to frontend
+            'email' => $user->getEmail(),
+            'is_admin' => $user->isAdmin()
+        ], 201);
     }
 
-    /**
-     * @Route("/api/login", name="api_login_jwt", methods={"POST"})
-     */
+
+    #[Route('/api/login', name: 'api_login_jwt', methods: ['POST'])]
     public function login(Request $request)
     {
         $data = json_decode($request->getContent(), true);
@@ -89,9 +92,7 @@ class AuthController extends AbstractController
         ], 200);
     }
 
-    /**
-     * @Route("/api/me", name="api_me", methods={"GET"})
-     */
+    #[Route('/api/me', name: 'api_me', methods: ['GET'])]
     public function me()
     {
         $user = $this->getUser();

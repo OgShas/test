@@ -16,6 +16,7 @@ export default function LoginForm({ onLogin }) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
             });
+
             const data = await res.json();
 
             if (!res.ok) {
@@ -23,20 +24,20 @@ export default function LoginForm({ onLogin }) {
                 return;
             }
 
-            saveToken(data.token);
-
-            // call callback to redirect user
-            if (onLogin) onLogin(data.is_admin);
+            if (data.token) {
+                saveToken(data.token);
+                if (onLogin) onLogin(data.is_admin);
+            }
         } catch (error) {
             setErr('Network error');
         }
     }
 
     return (
-        <form onSubmit={handleSubmit} style={{ display: 'inline-block' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'inline-block', marginLeft: '1em' }}>
             {err && <div style={{ color: 'red' }}>{err}</div>}
-            <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
-            <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} />
+            <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
+            <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required />
             <button type="submit">Login</button>
         </form>
     );
