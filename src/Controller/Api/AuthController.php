@@ -23,8 +23,6 @@ class AuthController extends AbstractController
         $this->jwtManager = $jwtManager;
     }
 
-    // src/Controller/Api/AuthController.php
-
     #[Route('/api/register', name: 'api_register', methods: ['POST'])]
     public function register(Request $request)
     {
@@ -37,30 +35,27 @@ class AuthController extends AbstractController
             return new JsonResponse(['error' => 'Email and password required'], 400);
         }
 
-        $existing = $this->em->getRepository(User::class)->findOneBy(['email' => $email]);
-        if ($existing) {
+        if ($this->em->getRepository(User::class)->findOneBy(['email' => $email])) {
             return new JsonResponse(['error' => 'User already exists'], 400);
         }
 
         $user = new User();
         $user->setEmail($email);
-        $user->setIsAdmin($isAdmin);
-        $hashed = $this->passwordHasher->hashPassword($user, $password);
-        $user->setPassword($hashed);
+        $user->setIsAdmin($isAdmin); // Make sure User entity has getIsAdmin/setIsAdmin
+        $user->setPassword($this->passwordHasher->hashPassword($user, $password));
 
         $this->em->persist($user);
         $this->em->flush();
 
-        // ✅ Generate JWT token after registration
         $token = $this->jwtManager->create($user);
 
         return new JsonResponse([
-            'token' => $token,        // send token to frontend
+            'token' => $token,
             'email' => $user->getEmail(),
-            'is_admin' => $user->isAdmin()
+            'is_admin' => $user->isAdmin(),
+            'roles' => $user->getRoles()
         ], 201);
     }
-
 
     #[Route('/api/login', name: 'api_login_jwt', methods: ['POST'])]
     public function login(Request $request)
@@ -74,11 +69,7 @@ class AuthController extends AbstractController
         }
 
         $user = $this->em->getRepository(User::class)->findOneBy(['email' => $email]);
-        if (!$user) {
-            return new JsonResponse(['error' => 'Invalid credentials'], 401);
-        }
-
-        if (!$this->passwordHasher->isPasswordValid($user, $password)) {
+        if (!$user || !$this->passwordHasher->isPasswordValid($user, $password)) {
             return new JsonResponse(['error' => 'Invalid credentials'], 401);
         }
 
@@ -86,9 +77,9 @@ class AuthController extends AbstractController
 
         return new JsonResponse([
             'token' => $token,
-            'is_admin' => $user->getIsAdmin(),
-            'roles' => $user->getRoles(),
-            'email' => $user->getEmail()
+            'email' => $user->getEmail(),
+            'is_admin' => $user->isAdmin(),
+            'roles' => $user->getRoles()
         ], 200);
     }
 

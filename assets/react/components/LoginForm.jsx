@@ -24,10 +24,9 @@ export default function LoginForm({ onLogin }) {
                 return;
             }
 
-            if (data.token) {
-                saveToken(data.token);
-                if (onLogin) onLogin(data.is_admin);
-            }
+            saveToken(data.token);
+
+            if (onLogin) onLogin(data.is_admin);
         } catch (error) {
             setErr('Network error');
         }
@@ -36,8 +35,20 @@ export default function LoginForm({ onLogin }) {
     return (
         <form onSubmit={handleSubmit} style={{ display: 'inline-block', marginLeft: '1em' }}>
             {err && <div style={{ color: 'red' }}>{err}</div>}
-            <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
-            <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required />
+            <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+            />
+            <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+            />
             <button type="submit">Login</button>
         </form>
     );

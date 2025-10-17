@@ -1,3 +1,4 @@
+// assets/react/utils/auth.js
 import { jwtDecode } from 'jwt-decode';
 
 const TOKEN_KEY = 'token';
@@ -17,6 +18,7 @@ export function removeToken() {
 export function getUserFromToken() {
     const token = getToken();
     if (!token) return null;
+
     try {
         const payload = jwtDecode(token);
         return {
@@ -25,6 +27,7 @@ export function getUserFromToken() {
             roles: payload.roles ?? []
         };
     } catch (e) {
+        console.error('Invalid token:', e);
         return null;
     }
 }
