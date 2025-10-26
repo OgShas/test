@@ -24,10 +24,18 @@ export default function RegisterForm({ onRegister }) {
                 return;
             }
 
-            // Save JWT token
+            // Save the JWT token locally
             saveToken(data.token);
 
-            // Callback to parent (Header) to update UI
+            // 🔥 Synchronize Symfony session with JWT
+            await fetch('/auth/sync', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: data.token }),
+                credentials: 'include', // 👈 THIS IS CRITICAL
+            });
+
+            // Notify parent component (Header)
             if (onRegister) onRegister(data.is_admin);
         } catch (error) {
             setErr('Network error');

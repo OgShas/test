@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controller\Api;
 
 use App\Entity\User;
@@ -9,6 +10,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 
 class AuthController extends AbstractController
 {
@@ -82,6 +85,50 @@ class AuthController extends AbstractController
             'roles' => $user->getRoles()
         ], 200);
     }
+
+    #[Route('/auth/sync', name: 'auth_sync', methods: ['POST'])]
+    public function sync(
+        Request $request,
+        JWTTokenManagerInterface $jwtManager,
+        EntityManagerInterface $em,
+        TokenStorageInterface $tokenStorage
+    ): JsonResponse {
+        $data = json_decode($request->getContent(), true);
+        $tokenString = $data['token'] ?? null;
+
+        if (!$tokenString) {
+            return new JsonResponse(['error' => 'Token missing'], 400);
+        }
+
+        try {
+            // Decode the JWT payload
+            $payload = $jwtManager->parse($tokenString);
+            $email = $payload['username'] ?? $payload['email'] ?? null;
+
+            if (!$email) {
+                return new JsonResponse(['error' => 'Invalid token payload'], 400);
+            }
+
+            $user = $em->getRepository(User::class)->findOneBy(['email' => $email]);
+            if (!$user) {
+                return new JsonResponse(['error' => 'User not found'], 404);
+            }
+
+            // Log user into Symfony session
+            $firewallName = 'main'; // Make sure this matches your firewall in security.yaml
+            $token = new UsernamePasswordToken($user, $firewallName, $user->getRoles());
+            $tokenStorage->setToken($token);
+
+            // Persist token in session
+            $request->getSession()->set('_security_'.$firewallName, serialize($token));
+            $request->getSession()->save(); // 👈 important!
+
+            return new JsonResponse(['status' => 'User session synchronized']);
+        } catch (\Exception $e) {
+            return new JsonResponse(['error' => 'Invalid or expired token'], 401);
+        }
+    }
+
 
     #[Route('/api/me', name: 'api_me', methods: ['GET'])]
     public function me()

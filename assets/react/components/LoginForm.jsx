@@ -24,8 +24,18 @@ export default function LoginForm({ onLogin }) {
                 return;
             }
 
+            // Save the JWT token in localStorage
             saveToken(data.token);
 
+            // 🔥 Synchronize Symfony session
+            await fetch('/auth/sync', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: data.token }),
+                credentials: 'include', // 👈 THIS IS CRITICAL
+            });
+
+            // Notify parent (Header) that login succeeded
             if (onLogin) onLogin(data.is_admin);
         } catch (error) {
             setErr('Network error');
