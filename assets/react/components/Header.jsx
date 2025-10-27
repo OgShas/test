@@ -15,16 +15,20 @@ export default function Header() {
         }
     }, []);
 
-    const handleLogin = (admin) => {
+    // Header.jsx
+    const handleLogin = (isAdmin) => {
         setIsLoggedIn(true);
-        setIsAdmin(admin);
-        window.location.href = '/';
+        setIsAdmin(isAdmin);
+
+        // 🔥 Redirect immediately based on admin
+        window.location.href = isAdmin ? '/admin' : '/';
     };
 
-    const handleRegister = (admin) => {
+    const handleRegister = (isAdmin) => {
         setIsLoggedIn(true);
-        setIsAdmin(admin);
-        window.location.href = '/';
+        setIsAdmin(isAdmin);
+
+        window.location.href = isAdmin ? '/admin' : '/';
     };
 
     const handleLogout = async () => {

@@ -36,7 +36,7 @@ export default function RegisterForm({ onRegister }) {
             });
 
             // Notify parent component (Header)
-            if (onRegister) onRegister(data.is_admin);
+            if (onRegister) onRegister(!!data.is_admin);
         } catch (error) {
             setErr('Network error');
         }

@@ -36,7 +36,7 @@ export default function LoginForm({ onLogin }) {
             });
 
             // Notify parent (Header) that login succeeded
-            if (onLogin) onLogin(data.is_admin);
+            if (onLogin) onLogin(!!data.is_admin);
         } catch (error) {
             setErr('Network error');
         }
