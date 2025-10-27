@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
-import { getUserFromToken, removeToken } from '../utils/auth';
+import { getUserFromToken, logout } from '../utils/auth';
 
 export default function Header() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -27,8 +27,8 @@ export default function Header() {
         window.location.href = '/';
     };
 
-    const handleLogout = () => {
-        removeToken();
+    const handleLogout = async () => {
+        await logout();
         setIsLoggedIn(false);
         setIsAdmin(false);
         window.location.href = '/';
@@ -52,14 +52,17 @@ export default function Header() {
             )}
 
             {isLoggedIn && (
-                <button onClick={handleLogout} style={{
-                    padding: '0.5em 1em',
-                    backgroundColor: '#333',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                }}>
+                <button
+                    onClick={handleLogout}
+                    style={{
+                        padding: '0.5em 1em',
+                        backgroundColor: '#333',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer'
+                    }}
+                >
                     Logout
                 </button>
             )}

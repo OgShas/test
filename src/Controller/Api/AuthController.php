@@ -86,6 +86,26 @@ class AuthController extends AbstractController
         ], 200);
     }
 
+    #[Route('/api/logout', name: 'api_logout', methods: ['POST'])]
+    public function logout(Request $request, TokenStorageInterface $tokenStorage): JsonResponse
+    {
+        // Clear the Symfony security token (logged-in user)
+        $tokenStorage->setToken(null);
+
+        // Invalidate Symfony session
+        $session = $request->getSession();
+        if ($session && $session->isStarted()) {
+            $session->invalidate();
+            $session->clear();
+        }
+
+        // Remove PHP session cookie
+        $response = new JsonResponse(['message' => 'Logout successful']);
+        $response->headers->clearCookie('PHPSESSID');
+
+        return $response;
+    }
+
     #[Route('/auth/sync', name: 'auth_sync', methods: ['POST'])]
     public function sync(
         Request $request,

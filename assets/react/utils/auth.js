@@ -35,3 +35,15 @@ export function getUserFromToken() {
 export function isAuthenticated() {
     return !!getToken();
 }
+
+export async function logout() {
+    // Remove JWT from localStorage
+    removeToken();
+
+    // Call Symfony backend to destroy session
+    await fetch('/api/logout', {
+        method: 'POST',
+        credentials: 'include', // IMPORTANT — allows Symfony to find the session
+    });
+}
+
