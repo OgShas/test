@@ -4,35 +4,38 @@ import RegisterForm from './RegisterForm';
 import { getUserFromToken, logout } from '../utils/auth';
 
 export default function Header() {
+    const [user, setUser] = useState(null); // store full user
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
 
     useEffect(() => {
-        const user = getUserFromToken();
-        if (user) {
+        const currentUser = getUserFromToken();
+        console.log('currentUser from useEffect:', currentUser);
+
+        if (currentUser) {
+            setUser(currentUser);          // store full user
             setIsLoggedIn(true);
-            setIsAdmin(user.is_admin);
+            setIsAdmin(currentUser.is_admin);
         }
     }, []);
 
-    // Header.jsx
-    const handleLogin = (isAdmin) => {
+    const handleLogin = (loggedInUser) => {
+        setUser(loggedInUser);          // save user on login
         setIsLoggedIn(true);
-        setIsAdmin(isAdmin);
-
-        // 🔥 Redirect immediately based on admin
-        window.location.href = isAdmin ? '/admin' : '/';
+        setIsAdmin(loggedInUser.is_admin);
+        window.location.href = loggedInUser.is_admin ? '/admin' : '/';
     };
 
-    const handleRegister = (isAdmin) => {
+    const handleRegister = (registeredUser) => {
+        setUser(registeredUser);
         setIsLoggedIn(true);
-        setIsAdmin(isAdmin);
-
-        window.location.href = isAdmin ? '/admin' : '/';
+        setIsAdmin(registeredUser.is_admin);
+        window.location.href = registeredUser.is_admin ? '/admin' : '/';
     };
 
     const handleLogout = async () => {
         await logout();
+        setUser(null);
         setIsLoggedIn(false);
         setIsAdmin(false);
         window.location.href = '/';
@@ -56,19 +59,24 @@ export default function Header() {
             )}
 
             {isLoggedIn && (
-                <button
-                    onClick={handleLogout}
-                    style={{
-                        padding: '0.5em 1em',
-                        backgroundColor: '#333',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer'
-                    }}
-                >
-                    Logout
-                </button>
+                <>
+                    {/* Display user name */}
+                    <span>Welcome, {user?.name || 'User'}!</span>
+
+                    <button
+                        onClick={handleLogout}
+                        style={{
+                            padding: '0.5em 1em',
+                            backgroundColor: '#333',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Logout
+                    </button>
+                </>
             )}
         </header>
     );
