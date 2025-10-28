@@ -49,11 +49,11 @@ class AuthController extends AbstractController
         $user->setIsAdmin($isAdmin);
         $user->setPassword($this->passwordHasher->hashPassword($user, $password));
 
-        $this->em->persist($user);
-        $this->em->flush();
-
         // 🔥 Dispatch the custom event AFTER registration
         $dispatcher->dispatch(new UserRegisteredEvent($user), UserRegisteredEvent::NAME);
+
+        $this->em->persist($user);
+        $this->em->flush();
 
         $token = $this->jwtManager->create($user);
 
@@ -61,8 +61,7 @@ class AuthController extends AbstractController
             'token' => $token,
             'email' => $user->getEmail(),
             'is_admin' => $user->isAdmin(),
-            'roles' => $user->getRoles(),
-            'message' => 'Welcome '.$user->getEmail().'!' // optional immediate message
+            'roles' => $user->getRoles()
         ], 201);
     }
 

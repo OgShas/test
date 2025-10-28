@@ -7,7 +7,7 @@ export default function RegisterForm({ onRegister }) {
     const [err, setErr] = useState(null);
 
     async function handleSubmit(e) {
-        e.preventDefault();
+        e.preventDefault()
         setErr(null);
 
         try {
