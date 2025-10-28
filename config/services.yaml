@@ -25,3 +25,8 @@ services:
     App\EventListener\JWTCreatedListener:
         tags:
             - { name: kernel.event_listener, event: lexik_jwt_authentication.on_jwt_created, method: __invoke }
+
+    # Explicit registration for User Registered listener
+    App\EventListener\UserRegisteredListener:
+        tags:
+            - { name: kernel.event_listener, event: app.user_registered, method: onUserRegistered }

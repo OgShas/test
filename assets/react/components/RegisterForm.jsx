@@ -35,6 +35,7 @@ export default function RegisterForm({ onRegister }) {
                 credentials: 'include', // 👈 THIS IS CRITICAL
             });
 
+
             // Notify parent component (Header)
             if (onRegister) onRegister(!!data.is_admin);
         } catch (error) {

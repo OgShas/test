@@ -3,8 +3,10 @@
 namespace App\Controller\Api;
 
 use App\Entity\User;
+use App\Event\UserRegisteredEvent;
 use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -27,7 +29,7 @@ class AuthController extends AbstractController
     }
 
     #[Route('/api/register', name: 'api_register', methods: ['POST'])]
-    public function register(Request $request)
+    public function register(Request $request, EventDispatcherInterface $dispatcher)
     {
         $data = json_decode($request->getContent(), true);
         $email = $data['email'] ?? null;
@@ -44,11 +46,14 @@ class AuthController extends AbstractController
 
         $user = new User();
         $user->setEmail($email);
-        $user->setIsAdmin($isAdmin); // Make sure User entity has getIsAdmin/setIsAdmin
+        $user->setIsAdmin($isAdmin);
         $user->setPassword($this->passwordHasher->hashPassword($user, $password));
 
         $this->em->persist($user);
         $this->em->flush();
+
+        // 🔥 Dispatch the custom event AFTER registration
+        $dispatcher->dispatch(new UserRegisteredEvent($user), UserRegisteredEvent::NAME);
 
         $token = $this->jwtManager->create($user);
 
@@ -56,7 +61,8 @@ class AuthController extends AbstractController
             'token' => $token,
             'email' => $user->getEmail(),
             'is_admin' => $user->isAdmin(),
-            'roles' => $user->getRoles()
+            'roles' => $user->getRoles(),
+            'message' => 'Welcome '.$user->getEmail().'!' // optional immediate message
         ], 201);
     }
 

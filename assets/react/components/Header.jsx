@@ -61,7 +61,7 @@ export default function Header() {
             {isLoggedIn && (
                 <>
                     {/* Display user name */}
-                    <span>Welcome, {user?.name || 'User'}!</span>
+                    <span>Welcome, {user?.email || 'User'}!</span>
 
                     <button
                         onClick={handleLogout}
