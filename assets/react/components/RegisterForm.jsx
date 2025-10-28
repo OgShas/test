@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { saveToken } from '../utils/auth';
+import { saveToken, getUserFromToken } from '../utils/auth';
 
 export default function RegisterForm({ onRegister }) {
     const [email, setEmail] = useState('');
@@ -7,7 +7,7 @@ export default function RegisterForm({ onRegister }) {
     const [err, setErr] = useState(null);
 
     async function handleSubmit(e) {
-        e.preventDefault()
+        e.preventDefault();
         setErr(null);
 
         try {
@@ -24,20 +24,20 @@ export default function RegisterForm({ onRegister }) {
                 return;
             }
 
-            // Save the JWT token locally
             saveToken(data.token);
 
-            // 🔥 Synchronize Symfony session with JWT
             await fetch('/auth/sync', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ token: data.token }),
-                credentials: 'include', // 👈 THIS IS CRITICAL
+                credentials: 'include',
             });
 
+            // ✅ Decode user from token
+            const user = getUserFromToken();
 
-            // Notify parent component (Header)
-            if (onRegister) onRegister(!!data.is_admin);
+            // ✅ Pass full user to parent
+            if (onRegister && user) onRegister(user);
         } catch (error) {
             setErr('Network error');
         }

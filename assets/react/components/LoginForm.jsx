@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { saveToken } from '../utils/auth';
+import { saveToken, getUserFromToken } from '../utils/auth';
 
 export default function LoginForm({ onLogin }) {
     const [email, setEmail] = useState('');
@@ -24,19 +24,20 @@ export default function LoginForm({ onLogin }) {
                 return;
             }
 
-            // Save the JWT token in localStorage
             saveToken(data.token);
 
-            // 🔥 Synchronize Symfony session
             await fetch('/auth/sync', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ token: data.token }),
-                credentials: 'include', // 👈 THIS IS CRITICAL
+                credentials: 'include',
             });
 
-            // Notify parent (Header) that login succeeded
-            if (onLogin) onLogin(!!data.is_admin);
+            // ✅ Decode user from token
+            const user = getUserFromToken();
+
+            // ✅ Pass full user to parent
+            if (onLogin && user) onLogin(user);
         } catch (error) {
             setErr('Network error');
         }
