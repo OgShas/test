@@ -16,7 +16,7 @@ class UserRegisteredListener
         // If using console: echo "Welcome {$user->getEmail()}!"; (not recommended for web)
         // Better: use logger
 
-        $user->setRoles(['ROLE_USER']);
+//        $user->setRoles(['ROLE_USER']);
         error_log("Welcome {$user->getEmail()}! Your registration is complete.");
     }
 }
